@@ -437,6 +437,10 @@
   .errmsg{display:none;color:#d8826f;font-size:.78rem;margin-top:6px;letter-spacing:.02em}
   .finput.err~.errmsg,.fselect.err~.errmsg,.ftext.err~.errmsg{display:block}
   .form-foot{margin-top:8px}
+  .form-error{display:none;color:#d8826f;font-size:.85rem;text-align:center;margin-top:14px;letter-spacing:.02em;line-height:1.7}
+  .form-error.show{display:block;animation:fadeUp .4s}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:0 18px 40px -16px rgba(200,162,83,.3)}
+  .btn[disabled] .arrow{transform:none!important}
   .priv{font-size:.78rem;color:var(--ink-faint);text-align:center;margin-top:18px;line-height:1.7}
   .priv a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
   .form-success{display:none;text-align:center;padding:30px 10px}
@@ -908,21 +912,32 @@
       </div>
 
       <div class="reveal d2">
-        <form class="form" id="contactForm" novalidate>
+        <!--
+          ▼▼▼ Formspree設定：ここだけ書き換えてください ▼▼▼
+          下の action の "your_form_id" を、Formspreeで発行されたフォームIDに置き換えます。
+          例）action="https://formspree.io/f/abcdwxyz"
+          ※ 通知先メールアドレスはFormspree管理画面で設定するため、ここには書きません。
+          ▲▲▲ ここだけ書き換えてください ▲▲▲
+        -->
+        <form class="form" id="contactForm" action="https://formspree.io/f/your_form_id" method="POST" novalidate>
+          <!-- 迷惑メール対策（ハニーポット）：人間には見えない項目。BOTが入力すると送信を弾きます -->
+          <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px;height:1px;opacity:0;pointer-events:none">
+          <!-- 受信メールの件名 -->
+          <input type="hidden" name="_subject" value="【夜香LP】新規お問い合わせ">
           <div class="fgroup">
             <label class="flabel" for="store">店舗名 <span class="req">required</span></label>
-            <input class="finput" type="text" id="store" name="store" placeholder="例）CLUB 夜香" autocomplete="organization">
+            <input class="finput" type="text" id="store" name="店舗名" placeholder="例）CLUB 夜香" autocomplete="organization">
             <span class="errmsg">店舗名をご入力ください。</span>
           </div>
           <div class="fgroup row">
             <div class="fgroup">
               <label class="flabel" for="person">ご担当者名 <span class="req">required</span></label>
-              <input class="finput" type="text" id="person" name="person" placeholder="例）山田 太郎" autocomplete="name">
+              <input class="finput" type="text" id="person" name="担当者名" placeholder="例）山田 太郎" autocomplete="name">
               <span class="errmsg">ご担当者名をご入力ください。</span>
             </div>
             <div class="fgroup">
               <label class="flabel" for="biztype">業態 <span class="req">required</span></label>
-              <select class="fselect" id="biztype" name="biztype">
+              <select class="fselect" id="biztype" name="業態">
                 <option value="">選択してください</option>
                 <option>キャバクラ</option>
                 <option>ガールズバー</option>
@@ -937,7 +952,7 @@
           <div class="fgroup row">
             <div class="fgroup">
               <label class="flabel" for="tel">電話番号 <span class="req">required</span></label>
-              <input class="finput" type="tel" id="tel" name="tel" placeholder="例）03-1234-5678" autocomplete="tel">
+              <input class="finput" type="tel" id="tel" name="電話番号" placeholder="例）03-1234-5678" autocomplete="tel">
               <span class="errmsg">正しい電話番号をご入力ください。</span>
             </div>
             <div class="fgroup">
@@ -948,17 +963,18 @@
           </div>
           <div class="fgroup">
             <label class="flabel" for="message">お問い合わせ内容</label>
-            <textarea class="ftext" id="message" name="message" placeholder="ご質問・ご要望などがあればご記入ください（任意）"></textarea>
+            <textarea class="ftext" id="message" name="お問い合わせ内容" placeholder="ご質問・ご要望などがあればご記入ください（任意）"></textarea>
           </div>
           <div class="form-foot">
-            <button type="submit" class="btn btn-primary btn-block">この内容で無料お試しを申し込む <span class="arrow">→</span></button>
+            <button type="submit" class="btn btn-primary btn-block" id="submitBtn"><span class="btn-label">この内容で無料お試しを申し込む</span> <span class="arrow">→</span></button>
+            <p class="form-error" id="formError" role="alert">送信に失敗しました。お手数ですが、時間をおいて再度お試しください。</p>
             <p class="priv">送信をもって<a href="#">プライバシーポリシー</a>に同意したものとみなします。</p>
           </div>
         </form>
         <div class="form-success" id="formSuccess">
           <div class="sc-ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-          <h4>お申し込みありがとうございます</h4>
-          <p>担当者より2営業日以内にご連絡いたします。<br>今しばらくお待ちください。</p>
+          <h4>お問い合わせありがとうございます</h4>
+          <p>担当者よりご連絡いたします。</p>
         </div>
       </div>
     </div>
@@ -1060,14 +1076,32 @@
     });
   });
 
-  /* ---- form validation (demo) ---- */
+  /* ---- contact form: validation + Formspree submit ---- */
   var form = document.getElementById("contactForm");
   var success = document.getElementById("formSuccess");
-  function setErr(el, on){ el.classList.toggle("err", on); }
+  var submitBtn = document.getElementById("submitBtn");
+  var formError = document.getElementById("formError");
+  var btnLabel = submitBtn ? submitBtn.querySelector(".btn-label") : null;
+  var btnLabelDefault = btnLabel ? btnLabel.textContent : "";
+
+  function byId(id){ return document.getElementById(id); }
+  function setErr(el, on){ if(el) el.classList.toggle("err", on); }
+
+  function setSubmitting(on){
+    if(!submitBtn) return;
+    submitBtn.disabled = on;
+    submitBtn.setAttribute("aria-busy", on ? "true" : "false");
+    if(btnLabel) btnLabel.textContent = on ? "送信中..." : btnLabelDefault;
+  }
+
   form.addEventListener("submit", function(e){
     e.preventDefault();
+    formError.classList.remove("show");
+
+    /* --- 入力チェック --- */
+    var store = byId("store"), person = byId("person"), biztype = byId("biztype"),
+        tel = byId("tel"), email = byId("email");
     var ok = true;
-    var store = form.store, person = form.person, biztype = form.biztype, tel = form.tel, email = form.email;
     setErr(store, !store.value.trim()); if(!store.value.trim()) ok=false;
     setErr(person, !person.value.trim()); if(!person.value.trim()) ok=false;
     setErr(biztype, !biztype.value); if(!biztype.value) ok=false;
@@ -1081,10 +1115,42 @@
       if(firstErr) firstErr.focus();
       return;
     }
-    /* NOTE: 本番ではここでサーバー or フォーム送信サービス(formrun / Googleフォーム等)へPOSTしてください */
-    form.style.display = "none";
-    success.classList.add("show");
-    success.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"center"});
+
+    /* --- 送信（Formspree） --- */
+    setSubmitting(true);
+    var endpoint = form.getAttribute("action");
+    var data = new FormData(form);
+
+    fetch(endpoint, {
+      method: "POST",
+      body: data,
+      headers: { "Accept": "application/json" }
+    })
+    .then(function(res){
+      if(res.ok){
+        /* 成功：フォームを隠し、完了メッセージを表示 */
+        form.style.display = "none";
+        formError.classList.remove("show");
+        success.classList.add("show");
+        success.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"center"});
+      } else {
+        /* Formspreeがエラーを返した場合 */
+        return res.json().then(function(json){
+          var msg = (json && json.errors && json.errors.length)
+            ? json.errors.map(function(x){ return x.message; }).join(" / ")
+            : "送信に失敗しました。お手数ですが、時間をおいて再度お試しください。";
+          throw new Error(msg);
+        });
+      }
+    })
+    .catch(function(err){
+      /* 通信エラー・設定未完了など */
+      formError.textContent = (err && err.message)
+        ? err.message
+        : "送信に失敗しました。通信環境をご確認のうえ、再度お試しください。";
+      formError.classList.add("show");
+      setSubmitting(false);
+    });
   });
 
   /* ---- hero scent particles ---- */
