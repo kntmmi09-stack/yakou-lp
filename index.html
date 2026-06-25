@@ -214,7 +214,7 @@
 
   /* ---------- effect ---------- */
   .effect{background:var(--bg-2);overflow:hidden}
-  .effect-lat{display:grid;grid-template-columns:1.05fr 1fr;gap:80px;align-items:center}
+  .effect-layout{display:grid;grid-template-columns:1.05fr 1fr;gap:80px;align-items:center}
   .effect-visual{position:relative;aspect-ratio:4/5;border:1px solid var(--line);overflow:hidden}
   .effect-visual .ev-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 60%,rgba(200,162,83,.22),transparent 60%)}
   .effect-visual .ev-rings span{
@@ -913,13 +913,11 @@
 
       <div class="reveal d2">
         <!--
-          ▼▼▼ Formspree設定：ここだけ書き換えてください ▼▼▼
-          下の action の "your_form_id" を、Formspreeで発行されたフォームIDに置き換えます。
-          例）action="https://formspree.io/f/abcdwxyz"
-          ※ 通知先メールアドレスはFormspree管理画面で設定するため、ここには書きません。
-          ▲▲▲ ここだけ書き換えてください ▲▲▲
+          ▼ Formspree設定：このフォームは送信先フォームID「mzdqwnqp」に設定済みです。
+            送信先メールアドレスはFormspree管理画面側で管理され、コードには出ません。
+            （別のフォームに変える場合は、下の action のIDだけ差し替えてください）
         -->
-        <form class="form" id="contactForm" action="https://formspree.io/f/https://formspree.io/f/mzdqwnqp" method="POST" novalidate>
+        <form class="form" id="contactForm" action="https://formspree.io/f/mzdqwnqp" method="POST" novalidate>
           <!-- 迷惑メール対策（ハニーポット）：人間には見えない項目。BOTが入力すると送信を弾きます -->
           <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px;height:1px;opacity:0;pointer-events:none">
           <!-- 受信メールの件名 -->
